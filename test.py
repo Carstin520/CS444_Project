@@ -62,7 +62,7 @@ if __name__ == '__main__':
                 
                 if opt.save_imgs:
                     file_name = data['fname'][0].split('-')
-                    folder_dir = './ckpt/%s/output/%s' % (opt.name, file_name[0])  
+                    folder_dir = '/content/drive/MyDrive/SelfIR/ckpt/%s/output/%s' % (opt.name, file_name[0])  
                     os.makedirs(folder_dir, exist_ok=True)
                     save_dir = '%s/%s' % (folder_dir, file_name[1])
                     dataset_test.imio.write(np.array(res['data_out'][0].cpu()).astype(np.uint8), save_dir)
