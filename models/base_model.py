@@ -18,6 +18,8 @@ class BaseModel(ABC):
 			self.device = torch.device('cuda', self.gpu_ids[0])
 		else:
 			self.device = torch.device('cpu')
+			
+		opt.checkpoints_dir = '/content/drive/MyDrive/SelfIR/ckpt/'
 		self.save_dir = os.path.join(opt.checkpoints_dir, opt.name)
 		self.loss_names = []
 		self.model_names = []
@@ -161,6 +163,9 @@ class BaseModel(ABC):
 	def load_network_path(self, net, path):
 		if isinstance(net, torch.nn.DataParallel):
 			net = net.module
+		if path == './ckpt/selfir_gauss_noise/UNET_model_1.pth':
+		    path = '/content/drive/MyDrive/SelfIR/ckpt/selfir_gauss_noise/UNET_model_1.pth'
+		print("here")
 		state_dict = torch.load(path, map_location=self.device)
 		print('loading the model from %s' % (path))
 		if hasattr(state_dict, '_metadata'):

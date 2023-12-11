@@ -14,7 +14,7 @@ class GoProDataset(BaseDataset):
 		super(GoProDataset, self).__init__(opt, split, dataset_name)
 
 		if self.root == '':
-			rootlist = ['/Data/dataset/GOPRO_Large/']
+			rootlist = ['/content/drive/MyDrive/GOPRO_Large/']
 			for root in rootlist:
 				if os.path.isdir(root):
 					self.root = root
@@ -47,6 +47,24 @@ class GoProDataset(BaseDataset):
 
 	def __len__(self):
 		return self.len_data
+	
+	def normalize_image(img):
+        mean = np.mean(img)
+        std = np.std(img)
+        return (img - mean) / std
+    
+    def resize_image(img, target_size):
+        h, w = img.shape[:2]
+        scale = target_size / max(h, w)
+        new_h, new_w = int(h * scale), int(w * scale)
+        resized_img = cv2.resize(img, (new_w, new_h))
+        delta_w = target_size - new_w
+        delta_h = target_size - new_h
+        top, bottom = delta_h // 2, delta_h - (delta_h // 2)
+        left, right = delta_w // 2, delta_w - (delta_w // 2)
+        color = [0, 0, 0]
+        return cv2.copyMakeBorder(resized_img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
+
 
 	def _getitem_train(self, idx):
 		idx = idx % len(self.names)
@@ -57,8 +75,8 @@ class GoProDataset(BaseDataset):
 
 		blur_img, gt_img = augment(blur_img, gt_img)
 
-		blur_img = np.float32(blur_img) / 255 
-		gt_img = np.float32(gt_img) / 255
+		blur_img = normalize_image(np.float32(blur_img))
+        gt_img = normalize_image(np.float32(gt_img))
 
 		return {'gt_noise': gt_img,
 				'blur_img': blur_img,
@@ -70,8 +88,9 @@ class GoProDataset(BaseDataset):
 		blur_img = self.blur_images[idx]
 		gt_img = self.gt_images[idx]
 
-		blur_img = np.float32(blur_img) / 255 
-		gt_img = np.float32(gt_img) / 255
+		blur_img = normalize_image(np.float32(blur_img))
+        gt_img = normalize_image(np.float32(gt_img))
+
 
 		noise_root = self.gt_dirs[idx].replace('sharp', 'npy')
 		noise_root = noise_root.replace('test', 'test_noise_' + self.opt.noisetype)
